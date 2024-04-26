@@ -1,34 +1,72 @@
-import { useState } from "react";
-import reactLogo from "./assets/react.svg";
-// eslint-disable-next-line import/no-unresolved
-import viteLogo from "/vite.svg";
+import React, { useState } from "react";
 import "./App.css";
+import { loginUser, refreshToken, registerUser } from "./api/auth/auth.ts";
+
+function getCookie(name: string) {
+  const cookies = document.cookie.split(";");
+  for (let i = 0; i < cookies.length; i++) {
+    const cookie = cookies[i].trim();
+    if (cookie.startsWith(name + "=")) {
+      return cookie.substring(name.length + 1);
+    }
+  }
+  return null;
+}
 
 function App() {
-  const [count, setCount] = useState(0);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const handleRegister = () => {
+    registerUser({ email, password }).then((res) => {
+      if (res.error) {
+        return console.log(res.error);
+      }
+      console.log(res.data);
+    });
+  };
+
+  const handleLogin = (email: string, password: string) => {
+    loginUser({ email, password }).then((res) => {
+      if (res.error) {
+        return console.log(res.error);
+      }
+      console.log(res.data);
+    });
+  };
+
+  const handleRefresh = () => {
+    const refresh = getCookie("refreshToken");
+    if (refresh) {
+      refreshToken(refresh).then((res) => {
+        if (res.error) {
+          return console.log(res.error);
+        }
+        console.log(res);
+      });
+    }
+  };
 
   return (
     <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank" rel="noreferrer">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank" rel="noreferrer">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      <input
+        type="text"
+        value={email}
+        placeholder={"Email"}
+        onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+          setEmail(event.target.value)
+        }
+      />
+      <input
+        type="text"
+        value={password}
+        placeholder={"psw"}
+        onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+          setPassword(event.target.value)
+        }
+      />
+      <button onClick={handleRegister}>Зарегаться</button>
+      <button onClick={() => handleLogin(email, password)}>login</button>
+      <button onClick={handleRefresh}>Refresh</button>
     </>
   );
 }
